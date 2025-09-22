@@ -13,6 +13,7 @@ open class Human {
         set(value) {
             field = value
         }
+
     public var second_name: String = ""
         get() = field
         set(value) {
@@ -23,6 +24,7 @@ open class Human {
         set(value) {
             field = value
         }
+
     public var age: Int = 0
         get() = field
         set(value) {
@@ -32,6 +34,7 @@ open class Human {
                 println("Возраст человека странный...")
             }
         }
+
     public var speed: Int = 1
         get() = field
         set(value) {
@@ -41,11 +44,13 @@ open class Human {
                 println("Скорость человека странная...")
             }
         }
+
     public var x: Int = 0
         get() = field
         set(value) {
             field = value
         }
+
     public var y: Int = 0
         get() = field
         set(value) {
@@ -62,6 +67,7 @@ open class Human {
         println("Мы создали человека с именем: $name ")
     }
 
+
     open fun move() {
         val deltaX = Random.nextInt(-speed, speed + 1)
         val deltaY = Random.nextInt(-speed, speed + 1)
@@ -70,6 +76,7 @@ open class Human {
         println("$name переместился на $deltaX, $deltaY в координату $x, $y")
     }
 }
+
 
 class Driver: Human {
     constructor(_name: String, _surname: String, _second: String, _sp: Int, _age: Int)
@@ -87,7 +94,6 @@ fun main() {
         Human("Алексей", "Иванов", "Сергеевич", 401, 4, 18),
         Human("Мария", "Петрова", "Алексеевна", 402, 3, 19),
         Driver("Боб", "Бобов", "Бобович", 1, 30)
-    )
 
     val simulationTime = 4
 
