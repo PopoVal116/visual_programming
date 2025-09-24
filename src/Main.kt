@@ -3,7 +3,7 @@ import kotlin.concurrent.thread
 
 open class Human {
 
-     public var name: String = ""
+    public var name: String = ""
         get() = field
         set(value) {
             field = value
@@ -78,16 +78,16 @@ open class Human {
 }
 
 
-class Driver: Human {
+class Driver : Human {
     constructor(_name: String, _surname: String, _second: String, _sp: Int, _age: Int)
             : super(_name, _surname, _second, -1, _sp, _age)
 
     override fun move() {
-        val dx = Random.nextInt(-speed, speed+1)
+        val dx = Random.nextInt(-speed, speed + 1)
         x += dx
         println("$name водитель переместился на ($dx, 0) в координату ($x, $y)")
     }
-    }
+}
 
 fun main() {
     val humans = arrayOf(
@@ -95,13 +95,13 @@ fun main() {
         Human("Мария", "Петрова", "Алексеевна", 402, 3, 19),
         Driver("Боб", "Бобов", "Бобович", 1, 30)
 
-    val simulationTime = 4
+        val simulationTime = 4
 
     for (t in 1..simulationTime) {
         println("\nTime step: $t")
         val threads = mutableListOf<Thread>()
         for (person in humans) {
-            val thread = thread{
+            val thread = thread {
                 person.move()
             }
             threads.add(thread)
