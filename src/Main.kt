@@ -107,7 +107,6 @@ fun main() {
             threads.add(thread)
         }
         for (thread in threads) {
-            thread.start()
             thread.join()
         }
     }
