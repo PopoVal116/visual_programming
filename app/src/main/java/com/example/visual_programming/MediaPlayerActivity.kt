@@ -2,13 +2,14 @@ package com.example.visual_programming2
 
 import android.Manifest
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.provider.MediaStore
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Environment
+import android.widget.Toast
+import java.io.File
 
 class MediaPlayerActivity : AppCompatActivity() {
 
@@ -26,17 +27,17 @@ class MediaPlayerActivity : AppCompatActivity() {
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var handler: Handler
 
-    private val songTitles = ArrayList<String>()
-    private val songUris = ArrayList<Uri>()
+    private var musicFiles: List<File> = emptyList()
     private var currentSong = 0
+    private var isStopped = false
 
     private val requestPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            loadMusicFromDevice()
+            loadMusic()
         } else {
-            Toast.makeText(this, "Нет доступа к музыке", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Нужно разрешение для музыки", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -75,7 +76,7 @@ class MediaPlayerActivity : AppCompatActivity() {
         seekBarPosition.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 textViewTime.text = formatTime(progress)
-                if (fromUser) {
+                if (fromUser && mediaPlayer.isPlaying) {
                     mediaPlayer.seekTo(progress)
                 }
             }
@@ -88,80 +89,81 @@ class MediaPlayerActivity : AppCompatActivity() {
                 mediaPlayer.pause()
                 buttonPlayPause.text = "▶"
             } else {
-                if (mediaPlayer.currentPosition > 0) {
+                if (isStopped) {
+                    playMusic()
+                } else if (mediaPlayer.currentPosition > 0) {
                     mediaPlayer.start()
                     buttonPlayPause.text = "||"
                     startUpdatingProgress()
-                } else if (songTitles.isNotEmpty()) {
-                    playMusic()
+                } else {
+                    if (musicFiles.isNotEmpty()) {
+                        playMusic()
+                    } else {
+                        requestPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    }
                 }
             }
         }
 
         buttonStop.setOnClickListener {
-            mediaPlayer.stop()
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.stop()
+            }
             mediaPlayer.reset()
             seekBarPosition.progress = 0
             textViewTime.text = "0:00"
             buttonPlayPause.text = "▶"
-            handler.removeCallbacksAndMessages(null)
+            isStopped = true
         }
 
         buttonForward.setOnClickListener {
-            if (songTitles.isNotEmpty()) {
-                currentSong = (currentSong + 1) % songTitles.size
-                playMusic()
-            }
-        }
-
-        buttonRewind.setOnClickListener {
-            if (songTitles.isNotEmpty()) {
-                currentSong = currentSong - 1
-                if (currentSong < 0) {
-                    currentSong = songTitles.size - 1
+            if (musicFiles.isNotEmpty()) {
+                currentSong++
+                if (currentSong >= musicFiles.size) {
+                    currentSong = 0
                 }
                 playMusic()
             }
         }
 
-        requestPermission.launch(Manifest.permission.READ_MEDIA_AUDIO)
-    }
-
-    private fun loadMusicFromDevice() {
-        songTitles.clear()
-        songUris.clear()
-
-        val collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE
-        )
-
-        contentResolver.query(collection, projection, null, null, null)?.use { cursor ->
-            val idCol = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
-            val titleCol = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
-
-            while (cursor.moveToNext()) {
-                val id = cursor.getLong(idCol)
-                val title = cursor.getString(titleCol)
-                val uri = Uri.withAppendedPath(collection, id.toString())
-
-                songTitles.add(title)
-                songUris.add(uri)
+        buttonRewind.setOnClickListener {
+            if (musicFiles.isNotEmpty()) {
+                currentSong--
+                if (currentSong < 0) {
+                    currentSong = musicFiles.size - 1
+                }
+                playMusic()
             }
         }
 
-        if (songTitles.isEmpty()) {
-            Toast.makeText(this, "Музыка не найдена", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        musicListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, songTitles)
         musicListView.setOnItemClickListener { _, _, position, _ ->
             currentSong = position
             playMusic()
             buttonPlayPause.text = "||"
         }
+
+        requestPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+
+    private fun loadMusic() {
+        val musicPath = Environment.getExternalStorageDirectory().path + "/Music"
+        val folder = File(musicPath)
+
+        musicFiles = folder.listFiles()?.filter { file ->
+            file.extension == "mp3" || file.extension == "wav" || file.extension == "aac"
+        } ?: emptyList()
+
+        if (musicFiles.isEmpty()) {
+            Toast.makeText(this, "Музыка не найдена", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val songNames = mutableListOf<String>()
+        for (file in musicFiles) {
+            songNames.add(file.name)
+        }
+
+        musicListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, songNames)
     }
 
     private fun playMusic() {
@@ -171,19 +173,21 @@ class MediaPlayerActivity : AppCompatActivity() {
             }
             mediaPlayer.reset()
 
-            mediaPlayer.setDataSource(this, songUris[currentSong])
-            mediaPlayer.prepare()
-            mediaPlayer.start()
+            if (musicFiles.isEmpty()) return
 
-            textViewTitle.text = songTitles[currentSong]
+            val musicFile = musicFiles[currentSong]
+            textViewTitle.text = musicFile.name
+            mediaPlayer.setDataSource(musicFile.absolutePath)
+            mediaPlayer.prepare()
             seekBarPosition.max = mediaPlayer.duration
-            seekBarPosition.progress = 0
-            textViewTime.text = "0:00"
+            mediaPlayer.start()
+            buttonPlayPause.text = "||"
+            isStopped = false
 
             startUpdatingProgress()
 
         } catch (e: Exception) {
-            Toast.makeText(this, "Ошибка воспроизведения", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Ошибка", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -194,7 +198,7 @@ class MediaPlayerActivity : AppCompatActivity() {
                     val pos = mediaPlayer.currentPosition
                     seekBarPosition.progress = pos
                     textViewTime.text = formatTime(pos)
-                    handler.postDelayed(this, 1000)
+                    handler.postDelayed(this, 100)
                 }
             }
         })
@@ -216,7 +220,6 @@ class MediaPlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacksAndMessages(null)
         mediaPlayer.release()
     }
 }
