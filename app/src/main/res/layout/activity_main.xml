@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -5,138 +6,150 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="#1B1B1B"
     tools:context=".MainActivity">
 
-    <!-- Новые кнопки -->
-
-    <Button
-        android:id="@+id/buttonSeti"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
-        android:text="Seti"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="44dp"
+        android:gravity="center"
+        android:text="Главное меню"
+        android:textColor="#FC6E20"
+        android:textSize="32sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.157"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.595" />
-
-    <Button
-        android:id="@+id/buttonWeather"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
-        android:text="Weather"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.8"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.811" />
-
-    <Button
-        android:id="@+id/buttonNotes"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
-        android:text="Notes"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.157"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.811" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/buttonCalculator"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#FC6E20"
         android:text="Calculator"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textColor="#FFE7D0"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.157"
+        app:layout_constraintHorizontal_bias="0.163"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.158" />
+        app:layout_constraintVertical_bias="0.25" />
 
     <Button
         android:id="@+id/buttonLocation"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#FC6E20"
         android:text="Location"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textColor="#FFE7D0"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintHorizontal_bias="0.836"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.158" />
-
-    <Button
-        android:id="@+id/buttonMessenger"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
-        android:text="Messenger"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.8"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.376" />
+        app:layout_constraintVertical_bias="0.25" />
 
     <Button
         android:id="@+id/buttonMediaPlayer"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#323232"
         android:text="MediaPlayer"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textColor="#FC6E20"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.157"
+        app:layout_constraintHorizontal_bias="0.163"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.376" />
+        app:layout_constraintVertical_bias="0.45" />
+
+    <Button
+        android:id="@+id/buttonMessenger"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#323232"
+        android:text="Messenger"
+        android:textColor="#FC6E20"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.836"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45" />
+
+    <Button
+        android:id="@+id/buttonSeti"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#FC6E20"
+        android:text="Seti"
+        android:textColor="#FFE7D0"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.163"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.649" />
 
     <Button
         android:id="@+id/buttonCamera"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:backgroundTint="@android:color/holo_blue_dark"
-        android:padding="8dp"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#FC6E20"
         android:text="Camera"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textColor="#FFE7D0"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintHorizontal_bias="0.836"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.595" />
+        app:layout_constraintVertical_bias="0.649" />
 
+    <Button
+        android:id="@+id/buttonNotes"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#323232"
+        android:text="Notes"
+        android:textColor="#FC6E20"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.163"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.849" />
+
+    <Button
+        android:id="@+id/buttonWeather"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#323232"
+        android:text="Weather"
+        android:textColor="#FC6E20"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.836"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.849" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
