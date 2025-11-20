@@ -12,8 +12,10 @@ import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationServices
 import java.text.SimpleDateFormat
 import java.util.*
+import android.location.LocationManager
+import android.location.LocationListener
 
-class LocationActivity : AppCompatActivity() {
+class LocationActivity : AppCompatActivity(), LocationListener {
 
     private val PERMISSION_CODE = 100
     private lateinit var tvLat: TextView
@@ -41,6 +43,7 @@ class LocationActivity : AppCompatActivity() {
         }
 
         val fusedClient = LocationServices.getFusedLocationProviderClient(this)
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
 
         try {
             fusedClient.lastLocation
@@ -57,8 +60,26 @@ class LocationActivity : AppCompatActivity() {
         } catch (e: SecurityException) {
             Toast.makeText(this, "Нет доступа к геолокации", Toast.LENGTH_SHORT).show()
         }
+
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100000L, 1f, this)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 1f, this)
+            Toast.makeText(this, "Обновление каждые 10 секунд включено", Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "Нет доступа к геолокации", Toast.LENGTH_SHORT).show()
+        }
     }
 
+    override fun onLocationChanged(location: Location) {
+        updateUI(location)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        try {
+            (getSystemService(LOCATION_SERVICE) as LocationManager).removeUpdates(this)
+        } catch (ignored: Exception) { }
+    }
     private fun updateUI(location: Location) {
         val time = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault()).format(Date(location.time))
         val altitude = if (location.hasAltitude()) location.altitude else 0.0
