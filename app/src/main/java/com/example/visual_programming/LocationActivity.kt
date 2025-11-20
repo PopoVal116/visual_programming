@@ -62,8 +62,8 @@ class LocationActivity : AppCompatActivity(), LocationListener {
         }
 
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100000L, 1f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 1f, this)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000L, 1f, this)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000L, 1f, this)
             Toast.makeText(this, "Обновление каждые 10 секунд включено", Toast.LENGTH_SHORT).show()
         } catch (e: SecurityException) {
             Toast.makeText(this, "Нет доступа к геолокации", Toast.LENGTH_SHORT).show()
