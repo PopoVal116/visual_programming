@@ -18,16 +18,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Visual_programming">
         <activity
-            android:name=".MediaPlayerActivity"
+            android:name="com.example.visual_programming2.ui.SocketActivity"
             android:exported="false" />
         <activity
-            android:name=".CalculatorActivity"
+            android:name="com.example.visual_programming2.ui.MediaPlayerActivity"
             android:exported="false" />
         <activity
-            android:name=".LocationActivity"
+            android:name="com.example.visual_programming2.ui.CalculatorActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.visual_programming2.ui.LocationActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.visual_programming2.ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

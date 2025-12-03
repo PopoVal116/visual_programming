@@ -1,9 +1,10 @@
-package com.example.visual_programming2
+package com.example.visual_programming2.ui
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.example.visual_programming2.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +27,12 @@ class MainActivity : AppCompatActivity() {
         buttonLocation.setOnClickListener {
             val locationIntent = Intent(this, LocationActivity::class.java)
             startActivity(locationIntent)
+        }
+
+        val buttonSocket = findViewById<Button>(R.id.buttonSocket)
+        buttonSocket.setOnClickListener {
+            val intent = Intent(this, SocketActivity::class.java)
+            startActivity(intent)
         }
     }
 }

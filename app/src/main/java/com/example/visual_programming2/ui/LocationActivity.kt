@@ -1,19 +1,22 @@
-package com.example.visual_programming2
+package com.example.visual_programming2.ui
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import com.example.visual_programming2.R
+import com.example.visual_programming2.data.LocationRecord
+import com.example.visual_programming2.supp.LocationSaver
+import com.example.visual_programming2.supp.PermissionUtils
 import com.google.android.gms.location.LocationServices
 import java.text.SimpleDateFormat
-import java.util.*
-import android.location.LocationManager
-import android.location.LocationListener
+import java.util.Date
+import java.util.Locale
 
 class LocationActivity : AppCompatActivity(), LocationListener {
 
@@ -22,6 +25,7 @@ class LocationActivity : AppCompatActivity(), LocationListener {
     private lateinit var tvLon: TextView
     private lateinit var tvAlt: TextView
     private lateinit var tvTime: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,8 +41,8 @@ class LocationActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun getLastLocation() {
-        if (!checkPermissions()) {
-            requestPermissions()
+        if (!PermissionUtils.checkLocationPermission(this)) {
+            PermissionUtils.requestLocationPermission(this)
             return
         }
 
@@ -48,18 +52,16 @@ class LocationActivity : AppCompatActivity(), LocationListener {
         try {
             fusedClient.lastLocation
                 .addOnSuccessListener { location: Location? ->
-                    if (location != null) {
-                        updateUI(location)
-                    } else {
-                        Toast.makeText(this, "Нет данных о местоположении", Toast.LENGTH_SHORT).show()
-                    }
+                    if (location != null) updateUI(location)
+                    else Toast.makeText(this, "Нет сохранённых данных", Toast.LENGTH_SHORT).show()
                 }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener {
+                    Toast.makeText(this, "Ошибка получения локации", Toast.LENGTH_SHORT).show()
                 }
         } catch (e: SecurityException) {
             Toast.makeText(this, "Нет доступа к геолокации", Toast.LENGTH_SHORT).show()
         }
+
 
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000L, 1f, this)
@@ -72,7 +74,18 @@ class LocationActivity : AppCompatActivity(), LocationListener {
 
     override fun onLocationChanged(location: Location) {
         updateUI(location)
+
+        LocationSaver.save(this, LocationRecord(
+            lat = location.latitude,
+            lon = location.longitude,
+            alt = location.altitude,
+            timestamp = location.time
+        )
+        )
     }
+
+
+
 
     override fun onPause() {
         super.onPause()
@@ -81,26 +94,16 @@ class LocationActivity : AppCompatActivity(), LocationListener {
         } catch (ignored: Exception) { }
     }
     private fun updateUI(location: Location) {
-        val time = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault()).format(Date(location.time))
+        val time = SimpleDateFormat(
+            "dd.MM.yyyy HH:mm:ss",
+            Locale.getDefault()
+        ).format(Date(location.time))
         val altitude = if (location.hasAltitude()) location.altitude else 0.0
 
         tvLat.text = "%.6f".format(location.latitude)
         tvLon.text = "%.6f".format(location.longitude)
         tvAlt.text = if (altitude != 0.0) "%.1f м".format(altitude) else "—"
         tvTime.text = time
-    }
-
-    private fun checkPermissions(): Boolean {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-            PERMISSION_CODE
-        )
     }
 
     override fun onRequestPermissionsResult(

@@ -1,14 +1,19 @@
-package com.example.visual_programming2
+package com.example.visual_programming2.ui
 
-import android.Manifest
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.Handler
-import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Environment
+import android.os.Handler
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ListView
+import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.example.visual_programming2.R
+import com.example.visual_programming2.supp.PermissionUtils
 import java.io.File
 
 class MediaPlayerActivity : AppCompatActivity() {
@@ -30,16 +35,6 @@ class MediaPlayerActivity : AppCompatActivity() {
     private var musicFiles: List<File> = emptyList()
     private var currentSong = 0
     private var isStopped = false
-
-    private val requestPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            loadMusic()
-        } else {
-            Toast.makeText(this, "Нужно разрешение для музыки", Toast.LENGTH_LONG).show()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,7 +94,11 @@ class MediaPlayerActivity : AppCompatActivity() {
                     if (musicFiles.isNotEmpty()) {
                         playMusic()
                     } else {
-                        requestPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        if (!PermissionUtils.checkMediaPermission(this)) {
+                            PermissionUtils.requestMediaPermission(this)
+                        } else {
+                            loadMusic()
+                        }
                     }
                 }
             }
@@ -142,7 +141,11 @@ class MediaPlayerActivity : AppCompatActivity() {
             buttonPlayPause.text = "||"
         }
 
-        requestPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (!PermissionUtils.checkMediaPermission(this)) {
+            PermissionUtils.requestMediaPermission(this)
+        } else {
+            loadMusic()
+        }
     }
 
     private fun loadMusic() {
@@ -209,6 +212,21 @@ class MediaPlayerActivity : AppCompatActivity() {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return "$minutes:${if (seconds < 10) "0$seconds" else "$seconds"}"
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                loadMusic()
+            } else {
+                Toast.makeText(this, "Разрешение отклонено", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onPause() {

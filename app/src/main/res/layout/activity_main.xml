@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1B1B1B"
-    tools:context=".MainActivity">
+    tools:context="com.example.visual_programming2.ui.MainActivity">
 
     <TextView
         android:id="@+id/textViewTitle"
@@ -137,11 +137,11 @@
         app:layout_constraintVertical_bias="0.849" />
 
     <Button
-        android:id="@+id/buttonWeather"
+        android:id="@+id/buttonSocket"
         android:layout_width="160dp"
         android:layout_height="100dp"
         android:backgroundTint="#323232"
-        android:text="Weather"
+        android:text="Socket"
         android:textColor="#FC6E20"
         android:textSize="16sp"
         android:textStyle="bold"
