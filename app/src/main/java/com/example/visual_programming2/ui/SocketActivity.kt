@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,11 @@ import org.zeromq.ZMQ
 class SocketActivity : AppCompatActivity() {
     private val log_tag = "MY_LOG_TAG"
     private lateinit var tvSockets: TextView
+    private lateinit var btnSendToPc: Button
     private lateinit var handler: Handler
+    private var isSending = false
+    private var counter = 0
+    private lateinit var clientThread: Thread
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,13 +32,24 @@ class SocketActivity : AppCompatActivity() {
             insets
         }
         tvSockets = findViewById(R.id.tvSockets)
+        btnSendToPc = findViewById(R.id.btn_send_to_pc)
         handler = Handler(Looper.getMainLooper())
+
+        btnSendToPc.setOnClickListener {
+            if (!isSending) {
+                Thread {
+                    startClient()
+                }.start()
+            } else {
+                stopClient()
+            }
+        }
     }
 
     //fun startServer() {
       //  val context = ZMQ.context(1)
         //val socket = context.socket(ZMQ.REP)
-        //socket.bind("tcp://*:2222")
+        //socket.bind("tcp://*:5556")
         //var counter = 0
 
         //while (true) {
@@ -53,32 +69,74 @@ class SocketActivity : AppCompatActivity() {
     //}
 
     fun startClient() {
-        val context = ZMQ.context(1)
-        val socket = context.socket(ZMQ.REQ)
-        socket.connect("tcp://192.168.0.164:5556")
-        val request = "Hello from Android!"
-        var counter = 0
+        if (isSending) {
+            return
+        }
+        isSending = true
+        counter = 0
+        handler.post {
+            btnSendToPc.text = "ОСТАНОВИТЬ"
+        }
 
-        while (true) {
-            counter++
-            socket.send(request.toByteArray(ZMQ.CHARSET), 0)
-            Log.d(log_tag, "[CLIENT] Отправил: $request ($counter)")
+        clientThread = Thread {
+            val context = ZMQ.context(1)
+            val socket = context.socket(ZMQ.REQ)
+            socket.connect("tcp://172.20.10.12:5557")
 
-            val reply = socket.recv(0)
-            val replyText = String(reply, ZMQ.CHARSET)
-            Log.d(log_tag, "[CLIENT] Получил: $replyText")
+            while (isSending) {
+                try {
+                    counter++
+                    val request = "Hello from Android! #$counter"
+                    socket.send(request.toByteArray(ZMQ.CHARSET), 0)
+                    Log.d(log_tag, "[CLIENT] Отправил: $request")
 
-            handler.post {
-                tvSockets.text = "Клиент: отправлено $counter\nОтвет: $replyText"
+                    val reply = socket.recv(0)
+                    val replyText = String(reply, ZMQ.CHARSET)
+                    Log.d(log_tag, "[CLIENT] Получил: $replyText")
+
+                    handler.post {
+                        tvSockets.text = "Клиент: отправлено $counter\nОтвет: $replyText"
+                    }
+
+                    Thread.sleep(2000)
+                } catch (e: Exception) {
+                    Log.e(log_tag, "[CLIENT] Ошибка: ${e.message}")
+                    handler.post {
+                        tvSockets.text = "Ошибка: ${e.message}"
+                    }
+                    break
+                }
             }
-            Thread.sleep(2000)
+
+            socket.close()
+            context.close()
+        }
+
+        clientThread.start()
+    }
+
+    fun stopClient() {
+        isSending = false
+        btnSendToPc.text = "ОТПРАВИТЬ НА ПК"
+
+        handler.post {
+            btnSendToPc.text = "ОТПРАВИТЬ НА ПК"
+            tvSockets.text = "Остановлено. Отправлено: $counter"
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isSending = false
+        if (::clientThread.isInitialized && clientThread.isAlive) {
+            clientThread.join(1000)
         }
     }
 
     override fun onResume() {
         super.onResume()
         //Thread { startServer() }.start()
-        Thread.sleep(1000)
-        Thread { startClient() }.start()
+        //Thread.sleep(1000)
+        //Thread { startClient() }.start()
     }
 }
