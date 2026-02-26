@@ -2,18 +2,18 @@ package com.example.visual_programming2.supp
 
 import android.content.Context
 import android.os.Environment
-import com.example.visual_programming2.data.LocationRecord
+import com.example.visual_programming2.data.DeviceData  // новый класс
 import com.google.gson.Gson
 import java.io.File
-
-object LocationSaver {
+object DataSaver {
     private val gson = Gson()
 
-    fun save(context: Context, record: LocationRecord) {
-        val json = gson.toJson(record)
-        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "my_locations.json")
+    fun save(context: Context, data: DeviceData) {
+        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "device_data.json")
 
         try {
+            val json = gson.toJson(data)
+
             if (!file.exists()) {
                 file.writeText("[\n  $json\n]")
             } else {
@@ -22,6 +22,7 @@ object LocationSaver {
                 file.writeText(newContent)
             }
         } catch (e: Exception) {
+
         }
     }
 }

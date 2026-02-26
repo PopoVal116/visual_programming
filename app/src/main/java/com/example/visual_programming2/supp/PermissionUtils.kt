@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 object PermissionUtils {
     fun checkLocationPermission(activity: AppCompatActivity): Boolean {
@@ -28,6 +29,17 @@ object PermissionUtils {
             activity,
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
             101
+        )
+    }
+    fun checkPhoneStatePermission(activity: AppCompatActivity): Boolean {
+        return ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun requestPhoneStatePermission(activity: AppCompatActivity) {
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(Manifest.permission.READ_PHONE_STATE),
+            1001
         )
     }
 }

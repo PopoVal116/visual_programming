@@ -12,14 +12,20 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.visual_programming2.R
 import org.zeromq.ZMQ
-import com.example.visual_programming2.data.LocationRecord
 import com.example.visual_programming2.supp.PermissionUtils
-import com.example.visual_programming2.supp.LocationSaver
+//import com.example.visual_programming2.supp.LocationSaver
+import com.example.visual_programming2.supp.DataSaver
+import com.example.visual_programming2.data.DeviceData
 import com.google.gson.Gson
 import android.location.Location
 import android.location.LocationManager
 import com.google.android.gms.location.*
-import android.annotation.SuppressLint
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.TrafficStats
+import android.telephony.*
+import androidx.core.app.ActivityCompat
+import com.example.visual_programming2.supp.DataBuilder
 
 
 
@@ -35,7 +41,7 @@ class SocketActivity : AppCompatActivity() {
     private val gson = Gson()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
-
+    private lateinit var telephonyManager: TelephonyManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +57,7 @@ class SocketActivity : AppCompatActivity() {
         handler = Handler(Looper.getMainLooper())
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
+        telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
         btnSendToPc.setOnClickListener {
             if (!isSending) {
@@ -98,6 +104,12 @@ class SocketActivity : AppCompatActivity() {
             return
         }
 
+        if (!PermissionUtils.checkPhoneStatePermission(this)) {
+            handler.post { tvSockets.text = "Нет разрешения READ_PHONE_STATE" }
+            PermissionUtils.requestPhoneStatePermission(this)
+            return
+        }
+
         isSending = true
         counter = 0
         handler.post {
@@ -108,7 +120,7 @@ class SocketActivity : AppCompatActivity() {
         clientThread = Thread {
             val context = ZMQ.context(1)
             val socket = context.socket(ZMQ.REQ)
-            socket.connect("tcp://172.20.10.12:5555")
+            socket.connect("tcp://10.0.2.2:5555")
 
             while (isSending) {
                 try {
@@ -131,10 +143,15 @@ class SocketActivity : AppCompatActivity() {
                         Thread.sleep(2000)
                         continue
                     }
-
-                    val request = "${currentLocation!!.latitude},${currentLocation!!.longitude},${currentLocation!!.altitude},${currentLocation!!.time}"
-                    socket.send(request.toByteArray(ZMQ.CHARSET), 0)
-                    Log.d(log_tag, "[CLIENT] Отправил: $request")
+                    val record = DataBuilder.buildAllData(
+                        currentLocation!!,
+                        telephonyManager,
+                        packageManager
+                    )
+                    DataSaver.save(this, record)
+                    val dataToSend = DataBuilder.recordToString(record)
+                    socket.send(dataToSend.toByteArray(ZMQ.CHARSET), 0)
+                    Log.d(log_tag, "[CLIENT] Отправил: $dataToSend")
 
                     val reply = socket.recv(0)
                     val replyText = String(reply, ZMQ.CHARSET)
@@ -148,7 +165,9 @@ class SocketActivity : AppCompatActivity() {
                             Отправлено: $counterForUI
                             Широта: ${locationForUI!!.latitude}
                             Долгота: ${locationForUI!!.longitude}
-                            Ответ: $replyForUI
+                            Точность: ${locationForUI!!.accuracy} м
+                            Трафик: Tx ${TrafficStats.getTotalTxBytes() / 1024 / 1024} MB, Rx ${TrafficStats.getTotalRxBytes() / 1024 / 1024} MB
+                            Ответ сервера: $replyForUI
                         """.trimIndent()
                     }
 
@@ -179,7 +198,6 @@ class SocketActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun requestSingleLocation(onLocationReceived: (Location?) -> Unit) {
 
         val locationRequest = LocationRequest.Builder(
@@ -200,6 +218,18 @@ class SocketActivity : AppCompatActivity() {
         )
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 1001 && grantResults.isNotEmpty()
+            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Thread { startClient() }.start()
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()

@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -19,19 +23,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Visual_programming">
         <activity
-            android:name="com.example.visual_programming2.ui.SocketActivity"
+            android:name=".ui.SocketActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.visual_programming2.ui.MediaPlayerActivity"
+            android:name=".ui.MediaPlayerActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.visual_programming2.ui.CalculatorActivity"
+            android:name=".ui.CalculatorActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.visual_programming2.ui.LocationActivity"
+            android:name=".ui.LocationActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.visual_programming2.ui.MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,6 +43,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".ui.LocationForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
     </application>
 
 </manifest>
