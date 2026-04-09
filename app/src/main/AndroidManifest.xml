@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,6 +23,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Visual_programming">
+        <service
+            android:name="com.example.visual_programming2.services.BackgroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location"></service>
+
         <activity
             android:name=".ui.SocketActivity"
             android:exported="false" />
@@ -43,11 +50,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:name=".ui.LocationForegroundService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="location" />
     </application>
 
 </manifest>

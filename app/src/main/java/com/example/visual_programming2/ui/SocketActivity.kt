@@ -11,21 +11,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.visual_programming2.R
-import org.zeromq.ZMQ
 import com.example.visual_programming2.supp.PermissionUtils
 //import com.example.visual_programming2.supp.LocationSaver
-import com.example.visual_programming2.supp.DataSaver
-import com.example.visual_programming2.data.DeviceData
-import com.google.gson.Gson
-import android.location.Location
-import android.location.LocationManager
 import com.google.android.gms.location.*
+import android.telephony.*
+import com.example.visual_programming2.services.BackgroundService
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.core.content.ContextCompat
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.TrafficStats
-import android.telephony.*
-import androidx.core.app.ActivityCompat
-import com.example.visual_programming2.supp.DataBuilder
 
 
 
@@ -33,16 +31,27 @@ class SocketActivity : AppCompatActivity() {
     private val log_tag = "MY_LOG_TAG"
     private lateinit var tvSockets: TextView
     private lateinit var btnSendToPc: Button
-    private lateinit var handler: Handler
-    private var isSending = false
+    //private lateinit var handler: Handler
+    /*private var isSending = false
     private var counter = 0
     private lateinit var clientThread: Thread
     private lateinit var locationManager: LocationManager
     private val gson = Gson()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
-    private lateinit var telephonyManager: TelephonyManager
+    private lateinit var telephonyManager: TelephonyManager*/
+    private var isServiceRunning = false
+    private val handler = Handler(Looper.getMainLooper())
 
+    private val serviceUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val message = intent?.getStringExtra("Status") ?: "нет статуса"
+            Log.d("MY_LOG_TAG", "Broadcast получен в Activity: $message")
+            handler.post {
+                tvSockets.text = message
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -54,20 +63,29 @@ class SocketActivity : AppCompatActivity() {
         }
         tvSockets = findViewById(R.id.tvSockets)
         btnSendToPc = findViewById(R.id.btn_send_to_pc)
-        handler = Handler(Looper.getMainLooper())
+        /*handler = Handler(Looper.getMainLooper())
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+        telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager*/
 
-        btnSendToPc.setOnClickListener {
+        /*btnSendToPc.setOnClickListener {
             if (!isSending) {
                 Thread {
-                    startClient()
+                    //startClient()
                 }.start()
             } else {
-                stopClient()
+                //stopClient()
+            }
+        }*/
+        btnSendToPc.setOnClickListener {
+            if (!isServiceRunning) {
+                startService()
+            } else {
+                stopService()
             }
         }
+
+        tvSockets.text = "Нажми кнопку, чтобы запустить фоновый сервис"
     }
 
     //fun startServer() {
@@ -92,7 +110,7 @@ class SocketActivity : AppCompatActivity() {
     //}
     //}
 
-    fun startClient() {
+    /*fun startClient() {
         if (isSending) {
             return
         }
@@ -186,9 +204,9 @@ class SocketActivity : AppCompatActivity() {
         }
 
         clientThread.start()
-    }
+    }*/
 
-    fun stopClient() {
+    /*fun stopClient() {
         isSending = false
         //btnSendToPc.text = "ОТПРАВИТЬ НА ПК"
 
@@ -216,6 +234,51 @@ class SocketActivity : AppCompatActivity() {
             locationCallback,
             Looper.getMainLooper()
         )
+    }*/
+
+    private fun startService() {
+        Log.d("PERM_DEBUG", "ACCESS_FINE_LOCATION: ${ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED}")
+        Log.d("PERM_DEBUG", "ACCESS_COARSE_LOCATION: ${ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED}")
+        Log.d("PERM_DEBUG", "ACCESS_BACKGROUND_LOCATION: ${ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED}")
+        Log.d("PERM_DEBUG", "READ_PHONE_STATE: ${ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED}")
+        if (!PermissionUtils.checkLocationPermission(this) ||
+            !PermissionUtils.checkPhoneStatePermission(this) ||
+                !PermissionUtils.checkBackgroundLocationPermission(this)){
+            tvSockets.text = "Нет разрешений на геолокацию и/или телефон"
+            PermissionUtils.requestLocationPermission(this)
+            PermissionUtils.requestPhoneStatePermission(this)
+                    PermissionUtils.requestBackgroundLocationPermission(this)
+            return
+        }
+
+        val serviceIntent = Intent(this, BackgroundService::class.java)
+        startForegroundService(serviceIntent)
+        isServiceRunning = true
+
+        btnSendToPc.text = "ОСТАНОВИТЬ"
+        tvSockets.text = "Сервис запущен ждём пакеты..."
+        Log.d(log_tag, "Запущен BackgroundService")
+    }
+
+    private fun stopService() {
+        val serviceIntent = Intent(this, BackgroundService::class.java)
+        stopService(serviceIntent)
+        isServiceRunning = false
+
+        btnSendToPc.text = "ЗАПУСТИТЬ"
+        tvSockets.text = "Сервис остановлен"
+        Log.d(log_tag, "Остановлен BackgroundService")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter("BackGroundUpdate")
+        LocalBroadcastManager.getInstance(this).registerReceiver(serviceUpdateReceiver, filter)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(serviceUpdateReceiver)
     }
 
     override fun onRequestPermissionsResult(
@@ -225,18 +288,25 @@ class SocketActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == 1001 && grantResults.isNotEmpty()
+        /*if (requestCode == 1001 && grantResults.isNotEmpty()
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Thread { startClient() }.start()
+           Thread { startClient() }.start()
+        }*/
+        if (requestCode in listOf(100, 1001, 102)) {
+            startService()
         }
     }
 
     override fun onDestroy() {
+        if (isServiceRunning) {
+            stopService()
+        }
         super.onDestroy()
-        isSending = false
+        /*isSending = false
         if (::clientThread.isInitialized && clientThread.isAlive) {
             clientThread.join(1000)
-        }
+        }*/
+
     }
 
     override fun onResume() {
